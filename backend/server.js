@@ -53,21 +53,21 @@ function genTests() {
 app.post('/api/check', (req, res) => {
     const expr = (req.body && req.body.expr) || '';
 
-    // ✅ 어떤 이유든 에러/제약이면 오답으로 통일
+    // 어떤 이유든 제약 위반 => 오답
     if (typeof expr !== 'string' || expr.length === 0 || expr.length > MAX_EXPR_LEN) {
         return res.json({ ok: false, message: '오답입니다.' });
     }
 
     try {
         for (const [A, B] of genTests()) {
-            const v = evalExpr(expr, A, B);
-            if (v !== A * B) {
+            const val = evalExpr(expr, A, B);             // BigInt 반환
+            const expected = BigInt(A) * BigInt(B);       // ✅ 기대값도 BigInt
+            if (val !== expected) {
                 return res.json({ ok: false, message: '오답입니다.' });
             }
         }
         return res.json({ ok: true, flag: FLAG });
-    } catch (_e) {
-        // ParseError, 기타 오류 모두 동일 응답
+    } catch {
         return res.json({ ok: false, message: '오답입니다.' });
     }
 });
