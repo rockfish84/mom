@@ -1,0 +1,239 @@
+:root {
+    --bg: #0b0f16;
+    --fg: #e9edf3;
+    --muted: #9aa7b8;
+    --card: rgba(255, 255, 255, 0.06);
+    --stroke: rgba(255, 255, 255, 0.12);
+    --accent: #66e0ff;
+    --danger: #ff6b6b;
+    --good: #7df1c8;
+}
+
+* {
+    box-sizing: border-box
+}
+
+html,
+body {
+    height: 100%
+}
+
+body {
+    margin: 0;
+    color: var(--fg);
+    background:
+        radial-gradient(1200px 600px at 10% -10%, #14304c 0%, transparent 60%),
+        radial-gradient(900px 500px at 110% 10%, #2a3f4f 0%, transparent 60%),
+        linear-gradient(180deg, #0b0f16 0%, #0b0f16 100%);
+    font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+.wrap {
+    max-width: 1100px;
+    margin: 48px auto;
+    padding: 0 20px
+}
+
+.hero h1 {
+    font-size: 32px;
+    font-weight: 800;
+    margin: 0 0 6px;
+    letter-spacing: -.02em
+}
+
+.subtitle {
+    margin: 0 0 18px;
+    color: var(--muted)
+}
+
+.subtitle.small {
+    font-size: 14px;
+    opacity: .85
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 24px
+}
+
+@media (max-width:980px) {
+    .grid {
+        grid-template-columns: 1fr
+    }
+}
+
+.card {
+    border: 1px solid var(--stroke);
+    background: var(--card);
+    border-radius: 16px;
+    padding: 20px;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
+    transition: transform .2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px)
+}
+
+.card-title {
+    font-weight: 700;
+    margin-bottom: 12px;
+    letter-spacing: .2px
+}
+
+.problem-text {
+    margin: 0;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px dashed var(--stroke);
+    background: rgba(0, 0, 0, .2);
+    line-height: 1.45;
+    white-space: pre-wrap;
+    font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 14.5px;
+}
+
+.tip {
+    margin-top: 12px;
+    color: var(--muted)
+}
+
+.label {
+    display: block;
+    margin: 8px 0 8px;
+    color: var(--muted);
+    font-size: 14px
+}
+
+.mono {
+    font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    width: 100%;
+    min-height: 120px;
+    resize: vertical;
+    border-radius: 12px;
+    border: 1px solid var(--stroke);
+    padding: 12px 14px;
+    color: var(--fg);
+    background: rgba(0, 0, 0, .25);
+    outline: none;
+}
+
+.mono:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(102, 224, 255, .2)
+}
+
+button {
+    border: 1px solid var(--stroke);
+    background: rgba(255, 255, 255, .06);
+    color: var(--fg);
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform .1s ease, background .2s ease, border-color .2s ease;
+}
+
+button:hover {
+    transform: translateY(-1px);
+    border-color: rgba(255, 255, 255, .25)
+}
+
+button:active {
+    transform: translateY(0)
+}
+
+button.primary {
+    background: linear-gradient(135deg, var(--accent), #7aa8ff);
+    color: #06101a;
+    border: none;
+    box-shadow: 0 8px 20px rgba(102, 224, 255, .25);
+}
+
+button.primary:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+    box-shadow: none
+}
+
+.hint {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    margin: 6px 0 10px
+}
+
+.muted {
+    color: var(--muted)
+}
+
+.ok {
+    color: var(--good)
+}
+
+.bad {
+    color: var(--danger)
+}
+
+.spinner {
+    margin-top: 10px;
+    width: 28px;
+    height: 28px;
+    border: 3px solid rgba(255, 255, 255, .2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .9s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg)
+    }
+}
+
+.result {
+    margin-top: 16px
+}
+
+.res-card {
+    border: 1px solid var(--stroke);
+    background: rgba(0, 0, 0, .25);
+    border-radius: 12px;
+    padding: 14px;
+}
+
+.res-card.good {
+    border-color: rgba(125, 241, 200, .6);
+    background: linear-gradient(180deg, rgba(18, 48, 36, .55), rgba(0, 0, 0, .25))
+}
+
+.res-card.bad {
+    border-color: rgba(255, 107, 107, .5);
+    background: linear-gradient(180deg, rgba(56, 19, 19, .55), rgba(0, 0, 0, .25))
+}
+
+.flag {
+    font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 16px;
+    word-break: break-all;
+    border: 1px dashed rgba(255, 255, 255, .25);
+    padding: 10px 12px;
+    border-radius: 10px;
+    margin-top: 10px;
+    background: rgba(0, 0, 0, .2);
+}
+
+.foot {
+    color: var(--muted);
+    margin-top: 28px;
+    text-align: center;
+    font-size: 14px
+}
+
+#confetti-canvas {
+    position: fixed;
+    inset: 0;
+    pointer-events: none
+}
