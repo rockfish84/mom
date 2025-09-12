@@ -15,14 +15,11 @@ function tokenize(input) {
         if (ch === '2') {
             const start = i;
             while (i < s.length && s[i] === '2') i++;
-            const numStr = s.slice(start, i);     // 예: "2222"
-            tokens.push({ t: 'NUM', v: BigInt(numStr) }); // BigInt("2222") = 2222n
+            tokens.push({ t: 'NUM', v: BigInt(s.slice(start, i)) }); // "222" -> 222n
             continue;
         }
         if (ch === 'A' || ch === 'B' || ch === '(' || ch === ')' || ch === '▷' || ch === '▶') {
-            tokens.push({ t: ch });
-            i++;
-            continue;
+            tokens.push({ t: ch }); i++; continue;
         }
         throw new ParseError(`허용되지 않은 문자: ${JSON.stringify(ch)}`);
     }
@@ -54,9 +51,8 @@ class Parser {
         while (true) {
             const tok = this.peek();
             if (tok && (tok.t === '▷' || tok.t === '▶')) {
-                const op = this.eat().t;
-                const rhs = this.parseTerm();
-                node = ['binop', op, node, rhs]; // 좌결합
+                const op = this.eat().t, rhs = this.parseTerm();
+                node = ['binop', op, node, rhs];
             } else break;
         }
         return node;
@@ -89,7 +85,7 @@ function sum_pos(L, U) {
     if (U < L) return ZERO;
     const n = U - L + ONE;
     const s = L + U;
-    // (n * s) / 2  — BigInt에서는 짝수 나눠서 오버플로 없이 처리
+    // (n*s)/2 (짝수 나눠 overflow 없이)
     if ((n & ONE) === ZERO) return (n / 2n) * s;
     else return n * (s / 2n);
 }
@@ -102,13 +98,9 @@ function eval_ast(ast, A, B) {
         if (v === 'B') return B;
         throw new Error('알 수 없는 변수');
     }
-    if (k === 'num') {
-        return ast[1]; // BigInt
-    }
+    if (k === 'num') return ast[1];
     if (k === 'binop') {
-        const op = ast[1];
-        const x = eval_ast(ast[2], A, B);
-        const y = eval_ast(ast[3], A, B);
+        const op = ast[1], x = eval_ast(ast[2], A, B), y = eval_ast(ast[3], A, B);
         if (op === '▷') return count_pos(x, y);
         if (op === '▶') return sum_pos(x, y);
         throw new Error('알 수 없는 연산자');
@@ -116,18 +108,15 @@ function eval_ast(ast, A, B) {
     throw new Error('잘못된 AST');
 }
 
-/** 외부 API: BigInt 결과를 반환 */
+/** 외부 API */
 function evalExpr(expr, A_num, B_num) {
-    // 빠른 허용문자 스캔(숫자는 '2'만)
+    // 빠른 허용문자 스캔
     for (const ch of expr) {
-        if (!'AB2()▷▶ \t\r\n'.includes(ch)) {
+        if (!'AB2()▷▶ \t\r\n'.includes(ch))
             throw new ParseError(`허용되지 않은 문자: ${JSON.stringify(ch)}`);
-        }
     }
-    const tokens = tokenize(expr);
-    const ast = new Parser(tokens).parse();
-    const A = BigInt(A_num);
-    const B = BigInt(B_num);
+    const ast = new Parser(tokenize(expr)).parse();
+    const A = BigInt(A_num), B = BigInt(B_num);
     return eval_ast(ast, A, B); // BigInt
 }
 

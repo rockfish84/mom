@@ -53,22 +53,23 @@ function genTests() {
 app.post('/api/check', (req, res) => {
     const expr = (req.body && req.body.expr) || '';
 
-    // 어떤 이유든 제약 위반 => 오답
+    // 빈 입력/길이 초과 → 수식 오류로 처리
     if (typeof expr !== 'string' || expr.length === 0 || expr.length > MAX_EXPR_LEN) {
-        return res.json({ ok: false, message: '오답입니다.' });
+        return res.json({ ok: false, code: 'syntax', message: '수식 오류입니다.' });
     }
 
     try {
         for (const [A, B] of genTests()) {
-            const val = evalExpr(expr, A, B);             // BigInt 반환
-            const expected = BigInt(A) * BigInt(B);       // ✅ 기대값도 BigInt
+            const val = evalExpr(expr, A, B);       // BigInt
+            const expected = BigInt(A) * BigInt(B); // BigInt
             if (val !== expected) {
-                return res.json({ ok: false, message: '오답입니다.' });
+                return res.json({ ok: false, code: 'wrong', message: '오답입니다.' });
             }
         }
         return res.json({ ok: true, flag: FLAG });
-    } catch {
-        return res.json({ ok: false, message: '오답입니다.' });
+    } catch (e) {
+        // 파싱/평가 예외는 모두 "수식 오류"
+        return res.json({ ok: false, code: 'syntax', message: '수식 오류입니다.' });
     }
 });
 
