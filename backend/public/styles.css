@@ -86,19 +86,30 @@ body {
     letter-spacing: .2px
 }
 
-/* 문제문은 본문 폰트 사용(굴림체 방지), 약간 더 크게 */
+/* 기존 .problem-text 블록을 아래로 교체 */
 .problem-text {
     margin: 0;
     padding: 16px;
     border-radius: 12px;
     border: 1px dashed var(--stroke);
     background: rgba(0, 0, 0, .2);
-    line-height: 1.55;
     white-space: pre-wrap;
-    font-family: Inter, "Noto Sans KR", system-ui, -apple-system, "Segoe UI", Roboto,
-        "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕",
-        "Noto Sans CJK KR", Arial, sans-serif;
-    font-size: 15px;
+
+    /* 부제목과 동일한 본문 폰트/두께/크기 */
+    font-family: inherit;
+    /* ← body와 동일(Inter + Noto Sans KR 스택) */
+    font-weight: 400;
+    font-size: 1rem;
+    /* 부제목과 통일 (기본 16px) */
+    line-height: 1.6;
+    color: inherit;
+}
+
+/* 코드 요소가 모노스페이스로 바뀌지 않게 상속 고정 */
+.problem-text code {
+    font-family: inherit;
+    font-weight: inherit;
+    font-size: inherit;
 }
 
 .tip {
