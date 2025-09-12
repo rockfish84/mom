@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const $ = (s) => document.querySelector(s);
 
   const MAX_LEN = window.MAX_EXPR_LEN || 2000;
-  const allowedRe = /^[AB2()▷▶\s]+$/;
+  const allowedRe = /^[AB2()▷▶\s]+$/; // 기본 허용 문자(공백 포함)
 
   const exprEl = $('#expr');
   const validHint = $('#valid-hint');
@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function setValidState(ok, msg) {
     validHint.textContent = msg;
     validHint.className = ok ? 'ok' : 'bad';
-    btn.disabled = !ok;          // ← 제출 가능/불가 강제
+    btn.disabled = !ok;
   }
 
   function updateHints() {
@@ -26,13 +26,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!val.length) return setValidState(false, '표현식을 입력해 주세요');
     if (val.length > MAX_LEN) return setValidState(false, `길이 초과(최대 ${MAX_LEN}자)`);
 
-    // ✅ 공백 모두 제거 후, '22' 가 하나라도 있으면 제출 불가
+    // 공백 제거 후 연속된 '2' 금지(22, 222, ...)
     const compact = val.replace(/\s+/g, '');
-    if (compact.includes('22')) {
-      return setValidState(false, "제출 불가: 22, 222 같은 숫자는 사용할 수 없습니다");
-    }
-
-    if (!allowedRe.test(val)) {
+    if (!allowedRe.test(val) || /22+/.test(compact)) {
       return setValidState(false, '허용되지 않은 문자가 포함되어 있습니다');
     }
 
