@@ -5,21 +5,24 @@ class ParseError extends Error { }
  * 토크나이저
  * - 공백 제거
  * - A, B, (, ), ▷, ▶ 그대로 토큰화
- * - [2]+ (연속된 '2') 는 하나의 정수 리터럴(NUM)로 토큰화
+ * - '2'는 단일 리터럴만 허용, 연속된 '2'(예: 22, 222)는 즉시 오류
  */
 function tokenize(input) {
     const s = input.replace(/\s+/g, '');
     const tokens = [];
-    for (let i = 0; i < s.length;) {
+    for (let i = 0; i < s.length; i++) {
         const ch = s[i];
         if (ch === '2') {
-            const start = i;
-            while (i < s.length && s[i] === '2') i++;
-            tokens.push({ t: 'NUM', v: BigInt(s.slice(start, i)) }); // "222" -> 222n
+            if (i + 1 < s.length && s[i + 1] === '2') {
+                // ✅ 규칙: 22, 222, ... 는 금지
+                throw new ParseError('연속된 숫자 2는 허용되지 않습니다');
+            }
+            tokens.push({ t: '2' });
             continue;
         }
         if (ch === 'A' || ch === 'B' || ch === '(' || ch === ')' || ch === '▷' || ch === '▶') {
-            tokens.push({ t: ch }); i++; continue;
+            tokens.push({ t: ch });
+            continue;
         }
         throw new ParseError(`허용되지 않은 문자: ${JSON.stringify(ch)}`);
     }
@@ -29,7 +32,7 @@ function tokenize(input) {
 /**
  * Grammar (▷, ▶ 동일 우선순위 · 좌결합)
  * expr := term (op term)*
- * term := 'A' | 'B' | NUM | '(' expr ')'
+ * term := 'A' | 'B' | '2' | '(' expr ')'
  * op   := '▷' | '▶'
  */
 class Parser {
@@ -51,7 +54,8 @@ class Parser {
         while (true) {
             const tok = this.peek();
             if (tok && (tok.t === '▷' || tok.t === '▶')) {
-                const op = this.eat().t, rhs = this.parseTerm();
+                const op = this.eat().t;
+                const rhs = this.parseTerm();
                 node = ['binop', op, node, rhs];
             } else break;
         }
@@ -62,32 +66,27 @@ class Parser {
         if (!tok) throw new ParseError('표현식이 비었습니다');
         if (tok.t === 'A') { this.eat(); return ['var', 'A']; }
         if (tok.t === 'B') { this.eat(); return ['var', 'B']; }
-        if (tok.t === 'NUM') { const v = this.eat().v; return ['num', v]; }
+        if (tok.t === '2') { this.eat(); return ['num', 2n]; }   // 단일 2만 허용
         if (tok.t === '(') { this.eat('('); const n = this.parseExpr(); this.eat(')'); return n; }
         throw new ParseError(`잘못된 토큰: '${tok.t}'`);
     }
 }
 
-/** BigInt 헬퍼 */
+/** BigInt helpers */
 const ONE = 1n, ZERO = 0n;
-function maxBI(a, b) { return a > b ? a : b; }
+const maxBI = (a, b) => (a > b ? a : b);
 
-/** A 이상 B 이하 양의 정수의 개수 */
 function count_pos(L, U) {
     L = maxBI(L, ONE);
     if (U < L) return ZERO;
     return U - L + ONE;
 }
-
-/** A 이상 B 이하 양의 정수의 합 (없으면 0) */
 function sum_pos(L, U) {
     L = maxBI(L, ONE);
     if (U < L) return ZERO;
     const n = U - L + ONE;
     const s = L + U;
-    // (n*s)/2 (짝수 나눠 overflow 없이)
-    if ((n & ONE) === ZERO) return (n / 2n) * s;
-    else return n * (s / 2n);
+    return (n % 2n === 0n) ? (n / 2n) * s : n * (s / 2n);
 }
 
 function eval_ast(ast, A, B) {
@@ -108,9 +107,8 @@ function eval_ast(ast, A, B) {
     throw new Error('잘못된 AST');
 }
 
-/** 외부 API */
 function evalExpr(expr, A_num, B_num) {
-    // 빠른 허용문자 스캔
+    // 빠른 허용문자 검사
     for (const ch of expr) {
         if (!'AB2()▷▶ \t\r\n'.includes(ch))
             throw new ParseError(`허용되지 않은 문자: ${JSON.stringify(ch)}`);

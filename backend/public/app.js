@@ -22,9 +22,16 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateHints() {
     const val = exprEl.value;
     lenHint.textContent = `${val.length}/${MAX_LEN}`;
+
     if (!val.length) return setValidState(false, '표현식을 입력해 주세요');
     if (val.length > MAX_LEN) return setValidState(false, `길이 초과(최대 ${MAX_LEN}자)`);
+
+    // ✅ 공백 제거 후 연속된 '2' 금지 (22, 222, ...)
+    const compact = val.replace(/\s+/g, '');
+    if (/22+/.test(compact)) return setValidState(false, '수식 오류: 22, 222 같은 숫자는 사용할 수 없습니다');
+
     if (!allowedRe.test(val)) return setValidState(false, '허용되지 않은 문자가 포함되어 있습니다');
+
     setValidState(true, '제출 가능');
   }
 
@@ -52,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!r.ok) return showError(data.detail || '요청 실패');
 
       if (data.ok) showSuccess(data.flag);
-      else showNotOk(data); // code에 따라 메시지 구분
+      else showNotOk(data); // code: 'syntax' | 'wrong'
     } catch {
       showError('네트워크 오류');
     } finally {
@@ -62,8 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function showNotOk(data) {
-    const code = data && data.code;
-    const msg = (code === 'syntax') ? '수식 오류입니다.' : '오답입니다.';
+    const msg = (data && data.code === 'syntax') ? '수식 오류입니다.' : '오답입니다.';
     result.innerHTML = `
       <div class="res-card bad">
         <div><strong>${msg}</strong></div>
